@@ -1,7 +1,7 @@
 # Katalog produktů (Expo / React Native)
 
 TypeScriptová Expo aplikace, která načítá produkty z Fake Store API,
-zobrazuje je pomocí `FlatList` a podporuje dvě značky přepínatelné za
+zobrazuje je pomocí `FlatList` a podporuje dva brandy přepínatelné za
 běhu aplikace. Samostatné refaktorovací cvičení `UserProfile` se nachází
 ve složce `Refactoring/` a záměrně není součástí UI katalogu produktů.
 
@@ -51,7 +51,7 @@ App
   -----------------------------------------------------------------------
   Vrstva                              Odpovědnost
   ----------------------------------- -----------------------------------
-  `src/config/brands.ts`              ID značky, název, primární barva a
+  `src/config/brands.ts`              ID brandu, název, primární barva a
                                       základní URL API
 
   `src/context/BrandContext.tsx`      Aktivní značka a její přepínání za
@@ -68,7 +68,7 @@ App
   -----------------------------------------------------------------------
 
 Produktová service není závislá na Reactu ani na Brand Contextu. Hook
-načte konfiguraci aktivní značky a předá potřebnou API URL service
+načte konfiguraci aktivního brandu a předá potřebnou API URL service
 vrstvě. Síťová logika tak zůstává oddělená od UI a lze ji případně znovu
 použít i mimo React komponenty.
 
@@ -126,22 +126,22 @@ karet.
 
 `src/config/brands.ts` definuje Brand A a Brand B. Každá značka má
 vlastní primární barvu UI a základní URL API. Komponenty používají
-konfiguraci aktivní značky místo brand-specific podmínek přímo v UI.
+konfiguraci aktivního brandu místo brand-specific podmínek přímo v UI.
 
-Obě značky v tomto assessmentu používají Fake Store API, protože nebyly
+Oba brandy v tomto assessmentu používají Fake Store API, protože nebyly
 poskytnuty dva samostatné backendy. API URL je přesto součástí
-konfigurace každé značky, takže konkrétní brand lze přesměrovat na jiný
+konfigurace každé brandy, takže konkrétní brand lze přesměrovat na jiný
 endpoint bez změn v UI komponentách.
 
-Výběr značky je spravován pomocí jednoduchého React Contextu. Při
-přepnutí značky se příslušný produktový stav resetuje a data se znovu
+Výběr brandu je spravován pomocí jednoduchého React Contextu. Při
+přepnutí brandu se příslušný produktový stav resetuje a data se znovu
 načtou podle nové konfigurace. Tím se zabrání tomu, aby se stará data
-předchozí značky zobrazovala jako aktuální.
+předchozí brandu zobrazovala jako aktuální.
 
 U větší white-label aplikace bych konfiguraci rozšířil například o
 assets, design tokeny, typografii, API konfiguraci a feature flags. U
 desítek značek by bylo možné konfiguraci externalizovat a oddělit
-brand-specific assets, aby nebylo nutné všechny značky distribuovat v
+brand-specific assets, aby nebylo nutné všechny bramdy distribuovat v
 každém bundle. White-label aplikace distribuované přes App Store nebo
 Google Play by pravděpodobně používaly také build-time konfiguraci pro
 bundle identifiers, ikony, splash screeny, signing a prostředí.
@@ -273,9 +273,9 @@ dat, zvážil bych také alternativy jako FlashList.
 -   Není použit globální state management, protože aplikace obsahuje
     malé množství sdíleného stavu; pro aktivní značku je Context
     dostačující.
--   Výběr značky funguje pouze za běhu aplikace a není persistován.
+-   Výběr brandu funguje pouze za běhu aplikace a není persistován.
 -   Není zaveden kompletní theme/token systém, protože zadání vyžaduje
-    pouze primární barvu značky a API konfiguraci.
+    pouze primární barvu brandu a API konfiguraci.
 -   Nastavení virtualizace `FlatList` zůstává blízko výchozím hodnotám
     místo optimalizace bez profilování.
 -   Offline chování je popsáno jako produkční rozšíření místo částečné
