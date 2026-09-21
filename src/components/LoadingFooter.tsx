@@ -2,7 +2,7 @@ import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 
 import { useBrand } from '../context/BrandContext';
 
-/** Bottom-of-list indicator shown while the next page is being appended. */
+// Shown at the bottom of the list while the next page is appended.
 export function LoadingFooter() {
   const { brand } = useBrand();
 

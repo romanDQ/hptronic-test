@@ -1,16 +1,12 @@
 import type { Product } from '../types/product';
 
 export type FetchProductsOptions = {
-  /** Comes from the active brand's configuration; this module stays unaware of brands. */
+  // Comes from the active brand; this module does not import React or Context.
   baseUrl: string;
   signal?: AbortSignal;
 };
 
-/**
- * Fetches the full product catalogue. The endpoint takes no page/limit
- * parameters, so the entire collection always arrives in one response.
- * Throws an Error with a user-presentable message when the request fails.
- */
+// The endpoint has no page/limit params — the whole catalogue arrives in one response.
 export async function fetchProducts({ baseUrl, signal }: FetchProductsOptions): Promise<Product[]> {
   const response = await requestProducts(`${baseUrl}/products`, signal);
 
@@ -31,6 +27,7 @@ async function requestProducts(url: string, signal?: AbortSignal): Promise<Respo
   try {
     return await fetch(url, { signal });
   } catch (error: unknown) {
+    // Re-throw abort so the hook can ignore it; everything else is a user-facing network error.
     if (isAbortError(error)) {
       throw error;
     }
@@ -38,10 +35,7 @@ async function requestProducts(url: string, signal?: AbortSignal): Promise<Respo
   }
 }
 
-/**
- * The response body is untyped JSON, so it is validated before it is trusted
- * as a Product[] instead of being cast.
- */
+// response.json() is untyped; validate before treating it as Product[].
 function isProductList(value: unknown): value is Product[] {
   return Array.isArray(value) && value.every(isProduct);
 }

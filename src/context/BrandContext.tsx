@@ -5,15 +5,11 @@ import { BRANDS, DEFAULT_BRAND_ID } from '../config/brands';
 import type { BrandConfig, BrandId } from '../config/brands';
 
 type BrandContextValue = {
-  /** Configuration of the brand that is currently active. */
   brand: BrandConfig;
   setBrand: (id: BrandId) => void;
 };
 
-/**
- * Null rather than a placeholder brand, so a consumer rendered outside the
- * provider fails loudly instead of silently using the wrong configuration.
- */
+// Null default so useBrand() throws outside the provider instead of silently serving a fallback brand.
 const BrandContext = createContext<BrandContextValue | null>(null);
 
 type BrandProviderProps = {

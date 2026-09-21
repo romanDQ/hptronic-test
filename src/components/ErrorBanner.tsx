@@ -5,7 +5,7 @@ type ErrorBannerProps = {
   onRetry: () => void;
 };
 
-/** Non-blocking error, used when products are already on screen. */
+// Non-blocking error; products stay visible underneath.
 export function ErrorBanner({ message, onRetry }: ErrorBannerProps) {
   return (
     <View style={styles.banner}>

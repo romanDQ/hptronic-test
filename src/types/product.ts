@@ -1,6 +1,4 @@
-/**
- * Shape of a single product returned by https://fakestoreapi.com/products
- */
+// Data from https://fakestoreapi.com/products
 export type Product = {
   readonly id: number;
   readonly title: string;

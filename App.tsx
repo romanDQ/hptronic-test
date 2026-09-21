@@ -7,6 +7,7 @@ import { BrandProvider } from './src/context/BrandContext';
 import { ProductsScreen } from './src/screens/ProductsScreen';
 
 export default function App() {
+  // Switcher sits above the screen so it stays visible on loading/error.
   return (
     <SafeAreaProvider>
       <BrandProvider>

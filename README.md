@@ -174,6 +174,60 @@ jednodušší na porovnání s původní verzí. Pokud by se datová logika
 používala na více obrazovkách, přesunul bych hook a API service do
 samostatných znovupoužitelných modulů.
 
+### Ruční otestování refaktorované komponenty
+
+Refaktorovací část není záměrně připojená k hlavnímu katalogu produktů. Pro
+rychlé ruční otestování lze dočasně nahradit obsah `App.tsx` následujícím
+kódem:
+
+```tsx
+import { useState } from 'react';
+import { Button, SafeAreaView, Text, View } from 'react-native';
+
+import UserProfile from './Refactoring/refactored';
+
+export default function App() {
+  const [userId, setUserId] = useState(1);
+
+  return (
+    <SafeAreaView>
+      <View>
+        <Text>Current userId: {userId}</Text>
+
+        <Button
+          title="User 1"
+          onPress={() => setUserId(1)}
+        />
+
+        <Button
+          title="User 2"
+          onPress={() => setUserId(2)}
+        />
+
+        <Button
+          title="Invalid user"
+          onPress={() => setUserId(999999)}
+        />
+
+        <UserProfile
+          userId={userId}
+          onUserFetched={(user) => {
+            console.log('Fetched user:', user.firstName);
+          }}
+        />
+      </View>
+    </SafeAreaView>
+  );
+}
+```
+
+Tím lze ověřit úvodní načtení uživatele, reakci na změnu `userId`, ruční
+refresh, error stav pro neexistujícího uživatele a callback
+`onUserFetched`. Rychlým přepínáním mezi User 1 a User 2 lze také ověřit,
+že starší request nepřepíše výsledek novějšího requestu.
+
+Po otestování stačí vrátit původní `App.tsx` pro spuštění katalogu produktů.
+
 ## Produkční caching a offline podpora
 
 Aktuální aplikace neimplementuje persistentní cache ani offline režim.

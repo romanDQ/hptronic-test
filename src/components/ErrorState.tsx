@@ -7,7 +7,7 @@ type ErrorStateProps = {
   onRetry: () => void;
 };
 
-/** Full-screen error, used when there is nothing to show behind it. */
+// Full-screen error when there are no products to keep on screen.
 export function ErrorState({ message, onRetry }: ErrorStateProps) {
   const { brand } = useBrand();
 

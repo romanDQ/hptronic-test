@@ -1,6 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import {
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 
+// Only the fields the UI reads. DummyJSON also returns password and bank data.
 type User = {
   id: number;
   firstName: string;
@@ -13,32 +19,22 @@ type UserProfileProps = {
   onUserFetched?: (user: User) => void;
 };
 
-/**
- * Exclusive states so "loading + error" or "previous user + new error"
- * cannot be represented.
- */
+// Exclusive states so loading + error cannot both be true.
 type UserState =
   | { status: 'loading' }
   | { status: 'success'; user: User }
   | { status: 'error'; message: string };
 
-type UseUserResult = {
-  state: UserState;
-  refresh: () => void;
-};
+async function fetchUser(
+  userId: number,
+  signal: AbortSignal,
+): Promise<User> {
+  const response = await fetch(
+    `https://dummyjson.com/users/${userId}`,
+    { signal },
+  );
 
-async function fetchUser(userId: number, signal: AbortSignal): Promise<User> {
-  let response: Response;
-
-  try {
-    response = await fetch(`https://dummyjson.com/users/${userId}`, { signal });
-  } catch (error: unknown) {
-    if (isAbortError(error)) {
-      throw error;
-    }
-    throw new Error('Failed to load user: please check your internet connection.');
-  }
-
+  // DummyJSON 404s with a JSON body — check status before treating it as a user.
   if (!response.ok) {
     throw new Error(
       response.status === 404
@@ -47,118 +43,130 @@ async function fetchUser(userId: number, signal: AbortSignal): Promise<User> {
     );
   }
 
-  const payload: unknown = await response.json();
+  const data: unknown = await response.json();
 
-  if (!isUser(payload)) {
-    throw new Error('Failed to load user: unexpected response format.');
+  if (!isUser(data)) {
+    throw new Error('Unexpected response format.');
   }
 
-  // Copy only the fields we model. DummyJSON also returns `password` and bank data.
-  return {
-    id: payload.id,
-    firstName: payload.firstName,
-    lastName: payload.lastName,
-    email: payload.email,
-  };
+  return data;
 }
 
 function isUser(value: unknown): value is User {
+  if (typeof value !== 'object' || value === null) {
+    return false;
+  }
+
+  const user = value as Record<string, unknown>;
+
   return (
-    isRecord(value) &&
-    typeof value.id === 'number' &&
-    typeof value.firstName === 'string' &&
-    typeof value.lastName === 'string' &&
-    typeof value.email === 'string'
+    typeof user.id === 'number' &&
+    typeof user.firstName === 'string' &&
+    typeof user.lastName === 'string' &&
+    typeof user.email === 'string'
   );
 }
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null;
-}
-
-function isAbortError(error: unknown): boolean {
-  return error instanceof Error && error.name === 'AbortError';
-}
-
-function toErrorMessage(error: unknown): string {
-  return error instanceof Error ? error.message : 'Failed to load user.';
-}
-
-function useUser(userId: number, onUserFetched?: (user: User) => void): UseUserResult {
-  const [state, setState] = useState<UserState>({ status: 'loading' });
+function useUser(
+  userId: number,
+  onUserFetched?: (user: User) => void,
+) {
+  const [state, setState] = useState<UserState>({
+    status: 'loading',
+  });
   const [refreshKey, setRefreshKey] = useState(0);
 
+  // Ref so an inline parent callback does not retrigger the fetch effect.
   const onUserFetchedRef = useRef(onUserFetched);
   onUserFetchedRef.current = onUserFetched;
 
-  /**
-   * Effects run after paint. Resetting here prevents one frame of the previous
-   * user being shown under the new `userId`.
-   */
-  const [seenUserId, setSeenUserId] = useState(userId);
-  if (seenUserId !== userId) {
-    setSeenUserId(userId);
-    setState({ status: 'loading' });
-  }
-
   useEffect(() => {
     const controller = new AbortController();
+
     setState({ status: 'loading' });
 
-    fetchUser(userId, controller.signal)
-      .then((user) => {
+    async function loadUser() {
+      try {
+        const user = await fetchUser(
+          userId,
+          controller.signal,
+        );
+
         if (controller.signal.aborted) {
           return;
         }
+
         setState({ status: 'success', user });
         onUserFetchedRef.current?.(user);
-      })
-      .catch((error: unknown) => {
-        if (controller.signal.aborted || isAbortError(error)) {
+      } catch (error: unknown) {
+        // Abort is cleanup (unmount / userId change / refresh), not a UI error.
+        if (controller.signal.aborted) {
           return;
         }
-        setState({ status: 'error', message: toErrorMessage(error) });
-      });
+
+        setState({
+          status: 'error',
+          message:
+            error instanceof Error
+              ? error.message
+              : 'Failed to load user.',
+        });
+      }
+    }
+
+    void loadUser();
 
     return () => controller.abort();
   }, [userId, refreshKey]);
 
   const refresh = useCallback(() => {
-    setState({ status: 'loading' });
-    setRefreshKey((current) => current + 1);
+    setRefreshKey((key) => key + 1);
   }, []);
 
-  return { state, refresh };
+  return {
+    state,
+    refresh,
+  };
 }
 
-export default function UserProfile({ userId, onUserFetched }: UserProfileProps) {
-  const { state, refresh } = useUser(userId, onUserFetched);
+export default function UserProfile({
+  userId,
+  onUserFetched,
+}: UserProfileProps) {
+  const { state, refresh } = useUser(
+    userId,
+    onUserFetched,
+  );
 
   return (
     <View style={styles.container}>
-      <UserDetails state={state} />
-      <TouchableOpacity onPress={refresh} style={styles.button} accessibilityRole="button">
+      {state.status === 'loading' && (
+        <Text>Loading user...</Text>
+      )}
+
+      {state.status === 'error' && (
+        <Text style={styles.error}>{state.message}</Text>
+      )}
+
+      {state.status === 'success' && (
+        <View>
+          <Text style={styles.heading}>User Details:</Text>
+          <Text>
+            Name: {state.user.firstName} {state.user.lastName}
+          </Text>
+          <Text>Email: {state.user.email}</Text>
+        </View>
+      )}
+
+      <TouchableOpacity
+        onPress={refresh}
+        style={styles.button}
+        accessibilityRole="button"
+      >
         <Text style={styles.buttonText}>Refresh User</Text>
       </TouchableOpacity>
     </View>
   );
-}
-
-function UserDetails({ state }: { state: UserState }) {
-  switch (state.status) {
-    case 'loading':
-      return <Text>Loading user...</Text>;
-    case 'error':
-      return <Text style={styles.error}>{state.message}</Text>;
-    case 'success':
-      return (
-        <View>
-          <Text style={styles.heading}>User Details:</Text>
-          <Text>{`Name: ${state.user.firstName} ${state.user.lastName}`}</Text>
-          <Text>{`Email: ${state.user.email}`}</Text>
-        </View>
-      );
-  }
 }
 
 const styles = StyleSheet.create({

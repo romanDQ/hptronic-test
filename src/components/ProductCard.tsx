@@ -7,10 +7,6 @@ type ProductCardProps = {
   product: Product;
 };
 
-/**
- * Memoized because list-level state (refreshing, appending a page, error)
- * re-renders the screen while each `product` reference stays the same.
- */
 export const ProductCard = memo(function ProductCard({ product }: ProductCardProps) {
   return (
     <View style={styles.card}>

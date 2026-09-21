@@ -1,20 +1,16 @@
-/** Constrained instead of `string`, so an unknown brand cannot be referenced anywhere. */
+// Constrained union so an unknown brand cannot be referenced.
 export type BrandId = 'brandA' | 'brandB';
 
 export type BrandConfig = {
   readonly id: BrandId;
   readonly name: string;
   readonly primaryColor: string;
-  /** Base URL of this brand's API; the resource path belongs to the service layer. */
+  // Brand owns the host; the resource path (/products) stays in the service.
   readonly apiBaseUrl: string;
 };
 
-/**
- * Both brands point at the Fake Store API because the assessment has no second
- * backend, and inventing a host would only produce a brand that always errors.
- * The URL is still owned per brand, so giving Brand B its own environment is a
- * one-line change here that nothing else in the app has to know about.
- */
+// Both brands use Fake Store API because the assessment has no second backend.
+
 export const BRANDS: Record<BrandId, BrandConfig> = {
   brandA: {
     id: 'brandA',
@@ -32,5 +28,5 @@ export const BRANDS: Record<BrandId, BrandConfig> = {
 
 export const DEFAULT_BRAND_ID: BrandId = 'brandA';
 
-/** Lets the switcher render every configured brand without naming any of them. */
+// Drives the switcher from config so no component names a specific brand id.
 export const BRAND_LIST: readonly BrandConfig[] = Object.values(BRANDS);

@@ -10,7 +10,7 @@ import { useBrand } from '../context/BrandContext';
 import { useProducts } from '../hooks/useProducts';
 import type { Product } from '../types/product';
 
-/** Half a viewport of remaining content, so the next page starts before the user hits the bottom. */
+// 0.5 = start loading when half a viewport of content remains.
 const END_REACHED_THRESHOLD = 0.5;
 
 export function ProductsScreen() {
@@ -18,6 +18,7 @@ export function ProductsScreen() {
   const { products, isLoading, isRefreshing, isLoadingMore, error, retry, refresh, loadMore } =
     useProducts();
 
+  // Empty deps: the callback closes over nothing reactive.
   const renderItem = useCallback<ListRenderItem<Product>>(
     ({ item }) => <ProductCard product={item} />,
     [],
@@ -32,6 +33,7 @@ export function ProductsScreen() {
     );
   }
 
+  // Nothing to show behind the error — retry as a full reload.
   if (error !== null && products.length === 0) {
     return <ErrorState message={error} onRetry={retry} />;
   }

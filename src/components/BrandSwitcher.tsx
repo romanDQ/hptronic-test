@@ -3,10 +3,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { BRAND_LIST } from '../config/brands';
 import { useBrand } from '../context/BrandContext';
 
-/**
- * Renders one segment per configured brand, so adding a brand to `BRANDS` is
- * enough — no component names or compares a specific brand id.
- */
+// Iterates BRAND_LIST so adding a brand in config is enough — no id literals here.
 export function BrandSwitcher() {
   const { brand: activeBrand, setBrand } = useBrand();
 
