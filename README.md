@@ -64,14 +64,7 @@ App
 
   `src/screens`, `src/components`     Prezentační vrstva
 
-  `Refactoring/refactored.tsx`        Refaktorovací cvičení `UserProfile`
-  -----------------------------------------------------------------------
-
-Produktová service není závislá na Reactu ani na Brand Contextu. Hook
-načte konfiguraci aktivního brandu a předá potřebnou API URL service
-vrstvě. Síťová logika tak zůstává oddělená od UI a lze ji případně znovu
-použít i mimo React komponenty.
-
+  
 ## Načítání produktů
 
 **Úvodní načítání.** Před dostupností produktů se zobrazí loading stav
