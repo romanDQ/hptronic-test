@@ -245,9 +245,7 @@ katalogu.
 
 ## Tisíce dynamicky velkých položek ve FlatList
 
-U výrazně většího seznamu bych nejprve zabránil stahování a mountování
-tisíců produktů najednou pomocí server-side cursor nebo page-based
-pagination.
+U výrazně většího seznamu bych použil server-side cursor nebo page-based pagination, aby aplikace nestahovala celý dataset najednou. Na straně UI bych následně využil virtualizaci FlatList, aby se renderovaly pouze aktuálně potřebné položky.
 
 Následně bych aplikaci profiloval před úpravou parametrů virtualizace.
 Komponenty jednotlivých řádků by měly zůstat jednoduché, je vhodné
